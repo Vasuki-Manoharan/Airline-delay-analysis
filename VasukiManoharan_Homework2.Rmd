@@ -1,0 +1,81 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(scales)
+library(reshape2)
+
+#1
+
+```{r}
+#Question 1
+a_d<-airlines_delay
+a_d%>%
+  group_by(carrier_name)%>%
+  drop_na()%>%
+  summarise(arr_delay=sum(arr_delay))%>%
+  arrange(arr_delay)%>%
+  tail(10)%>%
+  ggplot(aes(carrier_name,arr_delay))+geom_bar(stat = 'identity')+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) #question
+
+```
+
+#2
+
+```{r}
+#question2
+typeof(airlines_delay$year)
+airlines_delay$year<-as.character(airlines_delay$year)
+airlines_delay%>%
+  group_by(carrier_name,year)%>%
+  drop_na()%>%
+  summarise(arr_delay=sum(arr_delay))%>%
+  arrange(arr_delay)%>%
+  ggplot(aes(carrier_name,arr_delay,fill=year))+geom_bar(stat='identity',position='stack')+theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5)) 
+
+```
+
+#3
+
+```{r}
+#question3
+delay<-subset(airlines_delay,select=c(carrier_delay,late_aircraft_delay,nas_delay,security_delay,weather_delay))
+delay<-melt(delay)
+delay$value<-log(delay$value)
+drop_na(delay)
+ggplot(delay,aes(x=value,fill=variable))+geom_density(alpha=0.50)+xlab('Log delay in mins')+labs(fill='delay_type')
+```
+
+
+#4
+
+```{r}
+#question4
+heat<-subset(airlines_delay,select=c(carrier,carrier_delay,late_aircraft_delay,nas_delay,security_delay,weather_delay))
+heat<-melt(heat)
+heat%>%
+  group_by(variable,carrier)%>%
+  drop_na()%>%
+  summarise(value=sum(value))%>%
+  ggplot(aes(x=variable,y=carrier))+geom_tile(aes(fill=value))+labs(fill='sum_delay')+xlab('delay_type')
+
+```
+
+
+#%
+
+```{r}
+#question5
+line<-subset(airlines_delay,select=c(year,carrier,carrier_delay,late_aircraft_delay,nas_delay,security_delay,weather_delay))
+line<-melt(line)
+line%>%
+  group_by(year,variable)%>%
+  drop_na()%>%
+  summarise(value=sum(value))%>%
+  ggplot(aes(x=year,y=value,group=variable,colour=variable))+geom_line()+geom_point()+ xlab("factor (year)") + ylab("sum_delay")
+
+```
